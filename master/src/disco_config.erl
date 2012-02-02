@@ -122,7 +122,7 @@ update_config_table(HostInfo, Blacklist, GCBlacklist) ->
 
 -spec get_full_config() -> config().
 get_full_config() ->
-    case file:read_file(disco:get_setting("DISCO_MASTER_CONFIG")) of
+    case disco_util:read_config("DISCO_MASTER_CONFIG") of
         {ok, Json} ->
             ok;
         {error, enoent} ->
@@ -209,8 +209,8 @@ do_save_config_table(RawHosts) ->
                     BL = make_blacklist(Hosts, OldBL),
                     GCBL = make_blacklist(Hosts, OldGCBL),
                     Config = make_config(RawHosts, BL, GCBL),
-                    ok = file:write_file(os:getenv("DISCO_MASTER_CONFIG"),
-                                         mochijson2:encode({struct, Config})),
+                    ok = disco_util:write_config("DISCO_MASTER_CONFIG",
+                                                 mochijson2:encode({struct, Config})),
                     update_config_table(HostInfo, BL, GCBL),
                     {ok, <<"table saved!">>};
                 true ->
@@ -228,8 +228,8 @@ do_blacklist(Host) ->
                                   [Host | get_blacklist(OldConfig, blacklist)]),
     GCBlacklist = get_blacklist(OldConfig, gc_blacklist),
     NewConfig = make_config(RawHosts, NewBlacklist, GCBlacklist),
-    ok = file:write_file(os:getenv("DISCO_MASTER_CONFIG"),
-                         mochijson2:encode({struct, NewConfig})),
+    ok = disco_util:write_config("DISCO_MASTER_CONFIG",
+                                 mochijson2:encode({struct, NewConfig})),
     disco_server:manual_blacklist(Host, true).
 
 -spec do_whitelist(host_name()) -> 'ok'.
@@ -240,8 +240,8 @@ do_whitelist(Host) ->
                                   get_blacklist(OldConfig, blacklist) -- [Host]),
     GCBlacklist = get_blacklist(OldConfig, gc_blacklist),
     NewConfig = make_config(RawHosts, NewBlacklist, GCBlacklist),
-    ok = file:write_file(os:getenv("DISCO_MASTER_CONFIG"),
-                         mochijson2:encode({struct, NewConfig})),
+    ok = disco_util:write_config("DISCO_MASTER_CONFIG",
+                                 mochijson2:encode({struct, NewConfig})),
     disco_server:manual_blacklist(Host, false).
 
 -spec do_gc_blacklist(host_name()) -> 'ok'.
@@ -252,8 +252,8 @@ do_gc_blacklist(Host) ->
     NewGCBlacklist = make_blacklist(get_expanded_hosts(RawHosts),
                                     [Host | get_blacklist(OldConfig, gc_blacklist)]),
     NewConfig = make_config(RawHosts, Blacklist, NewGCBlacklist),
-    ok = file:write_file(os:getenv("DISCO_MASTER_CONFIG"),
-                         mochijson2:encode({struct, NewConfig})),
+    ok = disco_util:write_config("DISCO_MASTER_CONFIG",
+                                 mochijson2:encode({struct, NewConfig})),
     disco_server:gc_blacklist(NewGCBlacklist).
 
 -spec do_gc_whitelist(host_name()) -> 'ok'.
@@ -265,6 +265,6 @@ do_gc_whitelist(Host) ->
                                     get_blacklist(OldConfig, gc_blacklist) -- [Host]),
 
     NewConfig = make_config(RawHosts, Blacklist, NewGCBlacklist),
-    ok = file:write_file(os:getenv("DISCO_MASTER_CONFIG"),
-                         mochijson2:encode({struct, NewConfig})),
+    ok = disco_util:write_config("DISCO_MASTER_CONFIG",
+                                 mochijson2:encode({struct, NewConfig})),
     disco_server:gc_blacklist(NewGCBlacklist).
