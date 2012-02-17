@@ -8,6 +8,8 @@ main() ->
     ddfs_tag_test:prop_test(),
     io:fwrite("Running ddfs_tag tests ...~n", []),
     ddfs_tag_test:test(),
+    io:fwrite("Running disco_config prop tests ...~n", []),
+    disco_config_test:prop_test(),
     io:fwrite("Running json_validator_tests ...~n", []),
     json_validator_test:test(),
     io:fwrite("Running worker_protocol_tests ...~n", []),

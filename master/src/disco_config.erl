@@ -7,6 +7,7 @@
 -export([get_config_table/0, save_config_table/1,
          blacklist/1, whitelist/1,
          gc_blacklist/1, gc_whitelist/1]).
+-export([get_expanded_hosts/1]). %% exported for testing only
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
          terminate/2, code_change/3]).
 

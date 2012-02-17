@@ -116,7 +116,7 @@ uninstall:
 	- rm -Rf $(TARGETCFG) $(TARGETLIB) $(TARGETSRV)
 
 test: master $(ETESTOBJECTS)
-	$(ERL) -noshell -pa $(ETEST) $(EAPPS) -s master_tests main -s init stop
+	$(ERL) -noshell -pa $(ETEST) $(EAPPS) $(MECK_EBIN) $(PROPER_EBIN) -s master_tests main -s init stop
 
 dialyzer: EOPT = -W +debug_info
 dialyzer: $(EPLT)
