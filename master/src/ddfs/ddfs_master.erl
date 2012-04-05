@@ -261,7 +261,7 @@ do_new_blob(Obj, K, Exclude, BlackList, Nodes) ->
     {ok, WriteNodes} = do_choose_write_nodes(Nodes, K, Exclude, BlackList),
     Urls = [["http://", disco:host(N), ":", get(put_port), "/ddfs/", Obj]
             || N <- WriteNodes],
-    {ok, Urls}.
+    {ok, disco_dev:put_urls(Urls)}.
 
 % Tag request: Start a new tag server if one doesn't exist already. Forward
 % the request to the tag server.

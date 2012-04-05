@@ -62,7 +62,7 @@ settings() ->
 
 -spec host(node()) -> string().
 host(Node) ->
-    string:sub_word(atom_to_list(Node), 2, $@).
+    disco_dev:host(Node).
 
 -spec name(node()) -> string().
 name(Node) ->
@@ -82,11 +82,11 @@ slave_name() ->
 
 -spec slave_node(string()) -> node().
 slave_node(Host) ->
-    list_to_atom(slave_name() ++ "@" ++ Host).
+    list_to_atom(disco_dev:slave_name(Host) ++ "@localhost").
 
 -spec slave_safe(string()) -> 'false' | node().
 slave_safe(Host) ->
-    case catch list_to_existing_atom(slave_name() ++ "@" ++ Host) of
+    case catch list_to_existing_atom(disco_dev:slave_name(Host) ++ "@localhost") of
         {'EXIT', _Reason} ->
             false;
         Node ->

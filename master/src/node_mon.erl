@@ -81,29 +81,17 @@ slave_env() ->
 -spec slave_start(host()) -> {'ok', node()} | {'error', _}.
 slave_start(Host) ->
     error_logger:info_report({"starting node @", Host}),
-    slave:start(Host,
-                disco:slave_name(),
+    disco_dev:host_put_port(Host),
+    disco_dev:host_get_port(Host),
+    slave:start("localhost",
+                disco_dev:slave_name(Host),
                 slave_env(),
                 self(),
                 disco:get_setting("DISCO_ERLANG")).
 
 -spec is_master(host()) -> boolean().
-is_master(Host) ->
-    % the underlying tcp connection used by net_adm:names() may hang,
-    % so we use a timed rpc.
-    case rpc:call(node(), net_adm, names, [Host], ?RPC_CALL_TIMEOUT) of
-        {ok, Names} ->
-            Master = string:sub_word(atom_to_list(node()), 1, $@),
-            lists:keymember(Master, 1, Names);
-        {error, address} ->
-            % no epmd running, can't be master
-            false;
-        R ->
-            % retry the connection, after a while.
-            error_logger:warning_report({"net_adm:names() failed", Host, R}),
-            timer:sleep(?RPC_RETRY_TIMEOUT),
-            is_master(Host)
-    end.
+is_master(_Host) ->
+    false.
 
 -spec start_temp_gc(node()) -> pid().
 start_temp_gc(Node) ->
@@ -115,12 +103,12 @@ start_lock_server(Node) ->
 
 -spec start_ddfs_node(node(), {boolean(), boolean()}) -> pid().
 start_ddfs_node(Node, {GetEnabled, PutEnabled}) ->
-    DdfsRoot = disco:get_setting("DDFS_DATA"),
+    DdfsRoot = disco_dev:host_ddfs_data(disco:host(Node)),
     DiscoRoot = disco:get_setting("DISCO_DATA"),
     PutMax = list_to_integer(disco:get_setting("DDFS_PUT_MAX")),
     GetMax = list_to_integer(disco:get_setting("DDFS_GET_MAX")),
-    PutPort = list_to_integer(disco:get_setting("DDFS_PUT_PORT")),
-    GetPort = list_to_integer(disco:get_setting("DISCO_PORT")),
+    PutPort = list_to_integer(disco_dev:host_put_port(disco:host(Node))),
+    GetPort = list_to_integer(disco_dev:host_get_port(disco:host(Node))),
     Args = [{nodename, disco:host(Node)},
             {ddfs_root, DdfsRoot}, {disco_root, DiscoRoot},
             {put_max, PutMax}, {get_max, GetMax},
